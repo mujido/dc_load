@@ -133,17 +133,30 @@ int16_t uartReadByte(void)
     return byte;
 }
 
+uint8_t uartRead(void* buffer, uint8_t maxSize)
+{
+    di();
+    uint8_t readLength = circularBufferRead(uartRXBuffer, buffer, maxSize);
+    ei();
+
+    return readLength;
+}
+
 void main(void) {
     initializeIO();
     initializePeripheralPower();
     initializeInterrupts();
     initializeUart();
 
+    char buf[4];
+
     for(;;)
     {
-        int16_t ch = uartReadByte();
-        if (ch != CIRCULAR_BUFFER_EMPTY)
+        uint8_t readLength = uartRead(buf, sizeof(buf));
+        for (uint8_t i = 0; i < readLength; ++i)
         {
+            uint8_t ch = buf[i];
+
             switch ((uint8_t)ch)
             {
                 case '\n':

@@ -36,5 +36,7 @@ __reentrant uint8_t circularBufferWriteByte(CircularBuffer* circBuf, uint8_t byt
 
 __reentrant int16_t circularBufferReadByte(CircularBuffer* circBuf);
 
+__reentrant uint8_t circularBufferRead(CircularBuffer* circBuf, void* buffer, uint8_t maxSize);
+
 #endif
 

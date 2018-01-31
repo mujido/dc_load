@@ -41,7 +41,45 @@ __reentrant int16_t circularBufferReadByte(CircularBuffer* circBuf)
     if (circBuf->readPos_ >= circBuf->capacity_)
         circBuf->readPos_ = 0;
 
-    circBuf->empty_ = (uint8_t)(length <= 1);
+    if (length <= 1)
+        circBuf->empty_ = 1;
 
     return ch;
+}
+
+__reentrant uint8_t circularBufferRead(CircularBuffer* circBuf, void* buffer, uint8_t maxSize)
+{
+    uint8_t length = circularBufferGetLength(circBuf);
+
+    if (length == 0)
+        return 0;
+
+    uint8_t empty;
+    if (length > maxSize)
+    {
+        empty = 0;
+        length = maxSize;
+    }
+    else
+        empty = 1;
+
+    uint8_t pos = circBuf->readPos_;
+    uint8_t capacity = circBuf->capacity_;
+
+    for (uint8_t i = 0; i < length; ++i)
+    {
+        uint8_t ch = circBuf->buffer_[pos];
+        ((uint8_t*)buffer)[i] = ch;
+
+        ++pos;
+        if (pos >= capacity)
+            pos = 0;
+    }
+
+    circBuf->readPos_ = pos;
+
+    if (empty)
+        circBuf->empty_ = 1;
+
+    return length;
 }
