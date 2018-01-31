@@ -1,0 +1,4 @@
+*.c text eol=crlf
+*.h text eol=crlf
+*.xml text eol=crlf
+Makefile* text eol=crlf
