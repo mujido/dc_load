@@ -25,18 +25,30 @@ typedef struct {
 
 #define CIRCULAR_BUFFER_EMPTY -1
 
+#pragma warning push
+#pragma warning disable 510     // Disable the function not used warning
+
 static inline __reentrant uint8_t circularBufferIsEmpty(CircularBuffer* circBuf)
 {
     return circBuf->empty_;
+}
+
+static inline uint8_t circularBufferIsFull(CircularBuffer* circBuf)
+{
+    return (uint8_t)(!circBuf->empty_ && circBuf->readPos_ == circBuf->writePos_);
 }
 
 __reentrant uint8_t circularBufferGetLength(CircularBuffer* circBuf);
 
 __reentrant uint8_t circularBufferWriteByte(CircularBuffer* circBuf, uint8_t byte);
 
+__reentrant uint8_t circularBufferWrite(CircularBuffer* circBuf, const void* buffer, uint8_t size);
+
 __reentrant int16_t circularBufferReadByte(CircularBuffer* circBuf);
 
-__reentrant uint8_t circularBufferRead(CircularBuffer* circBuf, void* buffer, uint8_t maxSize);
+__reentrant uint8_t circularBufferRead(CircularBuffer* circBuf, const void* buffer, uint8_t maxSize);
+
+#pragma warning pop
 
 #endif
 

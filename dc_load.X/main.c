@@ -10,14 +10,13 @@
 #include "CircularBuffer.h"
 #include <xc.h>
 #include <stdlib.h>
-
-#define OSC_FREQ (32UL * 1000 * 1000)
+#include <string.h>
 
 // UART_SPBRG = OSC_FREQ / (4 * UART_BAUD) - 1
 // The intermediate value is multiplied by 10 and added with 5 to
 // round to the nearest integer value after dividing by 10 again.
 #define UART_BAUD 115200UL
-#define UART_SPBRG ((((OSC_FREQ) * 10) / (4 * (UART_BAUD)) + 5) / 10 - 1)
+#define UART_SPBRG ((((_XTAL_FREQ) * 10) / (4 * (UART_BAUD)) + 5) / 10 - 1)
 
 void initializeIO(void)
 {
@@ -89,7 +88,7 @@ void initializeUart(void)
     RC1STAbits.SPEN = 1;
 }
 
-#define UART_CIRCULAR_BUFFER_SIZE 8
+#define UART_CIRCULAR_BUFFER_SIZE 80
 MAKE_CIRCULAR_BUFFER(uartRXBuffer, UART_CIRCULAR_BUFFER_SIZE);
 MAKE_CIRCULAR_BUFFER(uartTXBuffer, UART_CIRCULAR_BUFFER_SIZE);
 
@@ -124,6 +123,40 @@ void uartSendByte(uint8_t byte)
     PIE1bits.TXIE = 1;
 }
 
+void uartSendBlocking(const void* buffer, uint8_t size)
+{
+    const uint8_t* pos = buffer;
+    uint8_t remaining = size;
+
+    while (remaining > 0)
+    {
+        if (!circularBufferIsFull(uartTXBuffer))
+        {
+            di();
+            uint8_t bytesWritten = circularBufferWrite(uartTXBuffer, pos, remaining);
+            ei();
+            remaining -= bytesWritten;
+
+            if (bytesWritten > 0)
+                PIE1bits.TXIE = 1;
+        }
+    }
+}
+
+void uartSendStringBlocking(const void* str)
+{
+    if (!str)
+        return;
+
+    uartSendBlocking(str, strlen(str));
+}
+
+void uartSendLineBlocking(const void* str)
+{
+    uartSendStringBlocking(str);
+    uartSendBlocking("\r\n", 2);
+}
+
 int16_t uartReadByte(void)
 {
     di();
@@ -142,36 +175,80 @@ uint8_t uartRead(void* buffer, uint8_t maxSize)
     return readLength;
 }
 
-void main(void) {
-    initializeIO();
-    initializePeripheralPower();
-    initializeInterrupts();
-    initializeUart();
+typedef enum UartError_
+{
+    UART_OVERFLOW = -1
+} UartError;
 
-    char buf[4];
+int16_t uartReadLineBlocking(void* buffer, uint8_t maxSize)
+{
+    char tmp[16];
+    uint8_t lineLength = 0;
 
     for(;;)
     {
-        uint8_t readLength = uartRead(buf, sizeof(buf));
+        uint8_t readLength = uartRead(tmp, sizeof(tmp));
+        if (readLength == 0)
+        {
+            __delay_ms(10);
+            continue;
+        }
+
         for (uint8_t i = 0; i < readLength; ++i)
         {
-            uint8_t ch = buf[i];
+            uint8_t ch = tmp[i];
 
-            switch ((uint8_t)ch)
+            switch (ch)
             {
                 case '\n':
                     // Ignore
                     break;
 
                 case '\r':
-                    uartSendByte('\r');
-                    uartSendByte('\n');
-                    break;
+                    goto end;
 
                 default:
-                    uartSendByte((uint8_t)ch);
+                    if (lineLength >= maxSize)
+                        return UART_OVERFLOW;
+
+                    *((uint8_t*)buffer + lineLength) = ch;
+                    ++lineLength;
                     break;
             }
         }
+    }
+
+end:
+    return (int16_t)lineLength;
+}
+
+void main(void)
+{
+    initializeIO();
+    initializePeripheralPower();
+    initializeInterrupts();
+    initializeUart();
+
+
+    static uint8_t line[81];
+
+    for(;;)
+    {
+        int16_t lineLength;
+
+        lineLength = uartReadLineBlocking(line, sizeof(line) - 1);
+        if (lineLength == UART_OVERFLOW)
+        {
+            // Read until end of line
+            while (UART_OVERFLOW == uartReadLineBlocking(line, sizeof(line)))
+                ;
+
+            uartSendLineBlocking("Input overflow");
+            continue;
+        }
+
+        line[(uint8_t)lineLength] = 0;
+        uartSendStringBlocking("echo: ");
+        uartSendLineBlocking(line);
     }
 }

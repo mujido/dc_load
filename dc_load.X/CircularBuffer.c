@@ -28,6 +28,34 @@ __reentrant uint8_t circularBufferWriteByte(CircularBuffer* circBuf, uint8_t byt
     return 1;
 }
 
+__reentrant uint8_t circularBufferWrite(CircularBuffer* circBuf, const void* buffer, uint8_t size)
+{
+    uint8_t writeSize = (uint8_t)(circBuf->capacity_ - circularBufferGetLength(circBuf));
+
+    if (writeSize == 0)
+        return 0;
+
+    writeSize = (uint8_t)((writeSize <= size) ? writeSize : size);
+
+    uint8_t pos = circBuf->writePos_;
+    uint8_t capacity = circBuf->capacity_;
+    const uint8_t* end = (const uint8_t*)buffer + writeSize;
+
+    for (const uint8_t* pch = buffer; pch != end; ++pch)
+    {
+        circBuf->buffer_[pos] = *pch;
+
+        ++pos;
+        if (pos >= capacity)
+            pos = 0;
+    }
+
+    circBuf->writePos_ = pos;
+    circBuf->empty_ = 0;
+
+    return writeSize;
+}
+
 __reentrant int16_t circularBufferReadByte(CircularBuffer* circBuf)
 {
     uint8_t length = circularBufferGetLength(circBuf);
@@ -47,7 +75,7 @@ __reentrant int16_t circularBufferReadByte(CircularBuffer* circBuf)
     return ch;
 }
 
-__reentrant uint8_t circularBufferRead(CircularBuffer* circBuf, void* buffer, uint8_t maxSize)
+__reentrant uint8_t circularBufferRead(CircularBuffer* circBuf, const void* buffer, uint8_t maxSize)
 {
     uint8_t length = circularBufferGetLength(circBuf);
 
