@@ -21,12 +21,12 @@ typedef struct {
     struct CircularBuffer_##name##_holder name##_memory = {\
         { 0, 0, (size), 1 } \
     }; \
-    CircularBuffer* name = &name##_memory.v_.circBuf_;
+    CircularBuffer* name = &name##_memory.v_.circBuf_
 
 #define CIRCULAR_BUFFER_EMPTY -1
 
 #pragma warning push
-#pragma warning disable 510     // Disable the function not used warning
+#pragma warning disable 520     // Disable the function not used warning
 
 static inline __reentrant uint8_t circularBufferIsEmpty(CircularBuffer* circBuf)
 {
