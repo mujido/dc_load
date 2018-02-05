@@ -8,7 +8,7 @@ typedef struct {
     uint8_t writePos_;
     unsigned capacity_ : 7;
     unsigned empty_ : 1;
-    char buffer_[1];
+    uint8_t buffer_[1];
 } CircularBuffer;
 
 #define MAKE_CIRCULAR_BUFFER(name, size) \
@@ -27,16 +27,6 @@ typedef struct {
 
 #pragma warning push
 #pragma warning disable 520     // Disable the function not used warning
-
-static inline __reentrant uint8_t circularBufferIsEmpty(CircularBuffer* circBuf)
-{
-    return circBuf->empty_;
-}
-
-static inline uint8_t circularBufferIsFull(CircularBuffer* circBuf)
-{
-    return (uint8_t)(!circBuf->empty_ && circBuf->readPos_ == circBuf->writePos_);
-}
 
 __reentrant uint8_t circularBufferGetLength(CircularBuffer* circBuf);
 
