@@ -75,9 +75,15 @@ __reentrant int16_t circularBufferReadByte(CircularBuffer* circBuf)
     return ch;
 }
 
-__reentrant uint8_t circularBufferRead(CircularBuffer* circBuf, const void* buffer, uint8_t maxSize)
+__reentrant uint8_t circularBufferRead(CircularBuffer* circBuf, const void __ram* buffer, uint8_t maxSize)
 {
+    if (buffer == (void*)0x017e)
+        __debug_break();
+
     uint8_t length = circularBufferGetLength(circBuf);
+
+    if (buffer == (void*)0x017e)
+        __debug_break();
 
     if (length == 0)
         return 0;
@@ -91,8 +97,16 @@ __reentrant uint8_t circularBufferRead(CircularBuffer* circBuf, const void* buff
     else
         empty = 1;
 
+    if (buffer == (void*)0x017e)
+        __debug_break();
+
     uint8_t pos = circBuf->readPos_;
     uint8_t capacity = circBuf->capacity_;
+
+    if (buffer == (void*)0x017e)
+        __debug_break();
+    if (buffer == (void*)0x2000)
+        __debug_break();
 
     for (uint8_t i = 0; i < length; ++i)
     {
@@ -108,6 +122,14 @@ __reentrant uint8_t circularBufferRead(CircularBuffer* circBuf, const void* buff
 
     if (empty)
         circBuf->empty_ = 1;
+
+//    for (uint8_t i = 0; i < length; ++i)
+//    {
+//        uint8_t ch = ((uint8_t*)buffer)[i];
+//        if ((ch > 127 || ch < 20) && ch != '\r' && ch != '\n')
+//           __debug_break();
+//    }
+
 
     return length;
 }

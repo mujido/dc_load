@@ -24,7 +24,7 @@ void serial1SendLineBlocking(const void* str);
 
 int16_t serial1ReadByte(void);
 
-uint8_t serial1Read(void* buffer, uint8_t maxSize);
+uint8_t serial1Read(void __ram* buffer, uint8_t maxSize);
 
 int16_t serial1ReadLineBlocking(void* buffer, uint8_t maxSize);
 

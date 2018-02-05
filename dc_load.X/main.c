@@ -91,7 +91,28 @@ void initializeUart(void)
 
 void interrupt interruptHandler(void)
 {
+    static unsigned tmp;
+
+    tmp = *(unsigned *)0x4c;
+    if (*(unsigned *)0x4c == 0x017e)
+        __debug_break();
+    if (*(unsigned*)0x52 == 0x017e)
+        __debug_break();
+    if (*(uint8_t*)0x20 == 0x61U)
+        __debug_break();
+
     serial1InterruptHandler();
+
+    if (*(uint8_t*)0x20 == 0x61U)
+        __debug_break();
+    if (*(unsigned*)0x52 == 0x017e)
+        __debug_break();
+    if (*(unsigned *)0x4c == 0x017e)
+        __debug_break();
+    if (*(unsigned *)0x4c == 0x2000)
+        __debug_break();
+    if (*(unsigned*)0x4c != tmp)
+        __debug_break();
 }
 
 void main(void) {

@@ -46,7 +46,7 @@ __reentrant uint8_t circularBufferWrite(CircularBuffer* circBuf, const void* buf
 
 __reentrant int16_t circularBufferReadByte(CircularBuffer* circBuf);
 
-__reentrant uint8_t circularBufferRead(CircularBuffer* circBuf, const void* buffer, uint8_t maxSize);
+__reentrant uint8_t circularBufferRead(CircularBuffer* circBuf, const void __ram* buffer, uint8_t maxSize);
 
 #pragma warning pop
 

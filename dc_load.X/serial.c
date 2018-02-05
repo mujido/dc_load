@@ -11,7 +11,16 @@ void serial1InterruptHandler(void)
     {
         int16_t ch = circularBufferReadByte(serial1TxBuffer);
         if (ch != CIRCULAR_BUFFER_EMPTY)
+        {
+//            uint8_t ch2 = (uint8_t)ch;
+//
+//            if (((uint8_t)ch2 > 127U || (uint8_t)ch2 < ' ') && ch2 != '\r' && ch2 != '\n')
+//            {
+//                __debug_break();
+//                ch = '-';
+//            }
             TX1REG = (uint8_t)ch;
+        }
         else
             PIE1bits.TXIE = 0;
     }
@@ -22,8 +31,14 @@ void serial1InterruptHandler(void)
         {
             RC1STAbits.CREN = 0;
             RC1STAbits.CREN = 1;
-        } else
-            circularBufferWriteByte(serial1RxBuffer, RC1REG);
+        }
+        else
+        {
+            uint8_t ch = RC1REG;
+            if ((ch > 127 || ch < 20) && ch != '\r' && ch != '\n')
+                __debug_break();
+            circularBufferWriteByte(serial1RxBuffer, ch);
+        }
     }
 }
 
