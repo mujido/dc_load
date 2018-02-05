@@ -57,17 +57,17 @@ OBJECTDIR=build/${CND_CONF}/${IMAGE_TYPE}
 DISTDIR=dist/${CND_CONF}/${IMAGE_TYPE}
 
 # Source Files Quoted if spaced
-SOURCEFILES_QUOTED_IF_SPACED=main.c CircularBuffer.c serial.c lineedit.c
+SOURCEFILES_QUOTED_IF_SPACED=main.c CircularBuffer.c serial.c lineedit.c powerup.as
 
 # Object Files Quoted if spaced
-OBJECTFILES_QUOTED_IF_SPACED=${OBJECTDIR}/main.p1 ${OBJECTDIR}/CircularBuffer.p1 ${OBJECTDIR}/serial.p1 ${OBJECTDIR}/lineedit.p1
-POSSIBLE_DEPFILES=${OBJECTDIR}/main.p1.d ${OBJECTDIR}/CircularBuffer.p1.d ${OBJECTDIR}/serial.p1.d ${OBJECTDIR}/lineedit.p1.d
+OBJECTFILES_QUOTED_IF_SPACED=${OBJECTDIR}/main.p1 ${OBJECTDIR}/CircularBuffer.p1 ${OBJECTDIR}/serial.p1 ${OBJECTDIR}/lineedit.p1 ${OBJECTDIR}/powerup.obj
+POSSIBLE_DEPFILES=${OBJECTDIR}/main.p1.d ${OBJECTDIR}/CircularBuffer.p1.d ${OBJECTDIR}/serial.p1.d ${OBJECTDIR}/lineedit.p1.d ${OBJECTDIR}/powerup.obj.d
 
 # Object Files
-OBJECTFILES=${OBJECTDIR}/main.p1 ${OBJECTDIR}/CircularBuffer.p1 ${OBJECTDIR}/serial.p1 ${OBJECTDIR}/lineedit.p1 
+OBJECTFILES=${OBJECTDIR}/main.p1 ${OBJECTDIR}/CircularBuffer.p1 ${OBJECTDIR}/serial.p1 ${OBJECTDIR}/lineedit.p1 ${OBJECTDIR}/powerup.obj
 
 # Source Files
-SOURCEFILES=main.c CircularBuffer.c serial.c lineedit.c
+SOURCEFILES=main.c CircularBuffer.c serial.c lineedit.c powerup.as
 
 
 CFLAGS=
@@ -163,7 +163,23 @@ endif
 # ------------------------------------------------------------------------------------
 # Rules for buildStep: assemble
 ifeq ($(TYPE_IMAGE), DEBUG_RUN)
+${OBJECTDIR}/powerup.obj: powerup.as  nbproject/Makefile-${CND_CONF}.mk
+	@${MKDIR} "${OBJECTDIR}" 
+	@${RM} ${OBJECTDIR}/powerup.obj.d 
+	@${RM} ${OBJECTDIR}/powerup.obj 
+	${MP_CC} -C $(MP_EXTRA_AS_PRE) --chip=$(MP_PROCESSOR_OPTION) -Q -G  -D__DEBUG=1 --debugger=pickit3  --double=24 --float=24 --opt=+asm,+asmfile,+speed,-space,+debug,-local --addrqual=ignore --mode=free -P -N255 --warn=-3 --asmlist -DXPRJ_default=$(CND_CONF)  --summary=default,-psect,-class,+mem,-hex,-file --output=default,-inhx032 --runtime=default,+clear,+init,-keep,-no_startup,-osccal,-resetbits,-download,-stackcall,+clib --output=-mcof,+elf:multilocs --stack=compiled:auto:auto "--errformat=%f:%l: error: (%n) %s" "--warnformat=%f:%l: warning: (%n) %s" "--msgformat=%f:%l: advisory: (%n) %s"  -o${OBJECTDIR}/powerup.obj  powerup.as 
+	@-${MV} ${OBJECTDIR}/powerup.d ${OBJECTDIR}/powerup.obj.d 
+	@${FIXDEPS} ${OBJECTDIR}/powerup.obj.d $(SILENT) -rsi ${MP_CC_DIR}../  
+	
 else
+${OBJECTDIR}/powerup.obj: powerup.as  nbproject/Makefile-${CND_CONF}.mk
+	@${MKDIR} "${OBJECTDIR}" 
+	@${RM} ${OBJECTDIR}/powerup.obj.d 
+	@${RM} ${OBJECTDIR}/powerup.obj 
+	${MP_CC} -C $(MP_EXTRA_AS_PRE) --chip=$(MP_PROCESSOR_OPTION) -Q -G  --double=24 --float=24 --opt=+asm,+asmfile,+speed,-space,+debug,-local --addrqual=ignore --mode=free -P -N255 --warn=-3 --asmlist -DXPRJ_default=$(CND_CONF)  --summary=default,-psect,-class,+mem,-hex,-file --output=default,-inhx032 --runtime=default,+clear,+init,-keep,-no_startup,-osccal,-resetbits,-download,-stackcall,+clib --output=-mcof,+elf:multilocs --stack=compiled:auto:auto "--errformat=%f:%l: error: (%n) %s" "--warnformat=%f:%l: warning: (%n) %s" "--msgformat=%f:%l: advisory: (%n) %s"  -o${OBJECTDIR}/powerup.obj  powerup.as 
+	@-${MV} ${OBJECTDIR}/powerup.d ${OBJECTDIR}/powerup.obj.d 
+	@${FIXDEPS} ${OBJECTDIR}/powerup.obj.d $(SILENT) -rsi ${MP_CC_DIR}../  
+	
 endif
 
 # ------------------------------------------------------------------------------------
