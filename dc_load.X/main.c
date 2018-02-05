@@ -9,6 +9,7 @@
 #include "IntTypes.h"
 #include "CircularBuffer.h"
 #include "serial.h"
+#include "lineedit.h"
 #include <xc.h>
 #include <stdlib.h>
 #include <string.h>
@@ -121,26 +122,15 @@ void main(void) {
     initializeInterrupts();
     initializeUart();
 
-
-    static uint8_t line[81];
-
     for(;;)
     {
-        int16_t lineLength;
-
-        lineLength = serial1ReadLineBlocking(line, sizeof(line) - 1);
-        if (lineLength == UART_OVERFLOW)
+        uint8_t leStatus = lineEditReadSerial();
+        if (leStatus == LINE_EDIT_EOL)
         {
-            // Read until end of line
-            while (UART_OVERFLOW == serial1ReadLineBlocking(line, sizeof(line)))
-                ;
-
-            serial1SendLineBlocking("Input overflow");
-            continue;
+            serial1SendStringBlocking("echo: ");
+            serial1SendBlocking(lineContext.lineBuf_, lineContext.length_);
+            serial1SendStringBlocking("\r\n");
+            lineEditClear();
         }
-
-        line[(uint8_t)lineLength] = 0;
-        serial1SendStringBlocking("echo: ");
-        serial1SendLineBlocking(line);
     }
 }

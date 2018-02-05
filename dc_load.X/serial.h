@@ -14,7 +14,7 @@ typedef enum UartError_
 
 void serial1InterruptHandler(void);
 
-void serial11SendByte(uint8_t byte);
+void serial1SendByteBlocking(uint8_t byte);
 
 void serial1SendBlocking(const void* buffer, uint8_t size);
 

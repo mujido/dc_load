@@ -42,11 +42,18 @@ void serial1InterruptHandler(void)
     }
 }
 
-void serial1SendByte(uint8_t byte)
+void serial1SendByteBlocking(uint8_t byte)
 {
-    di();
-    circularBufferWriteByte(serial1TxBuffer, byte);
-    ei();
+    uint8_t sent = 0;
+
+    while (!sent)
+    {
+        di();
+        sent = circularBufferWriteByte(serial1TxBuffer, byte);
+        ei();
+
+    }
+
     PIE1bits.TXIE = 1;
 }
 
@@ -57,16 +64,14 @@ void serial1SendBlocking(const void* buffer, uint8_t size)
 
     while (remaining > 0)
     {
-        if (!circularBufferIsFull(serial1TxBuffer))
-        {
-            di();
-            uint8_t bytesWritten = circularBufferWrite(serial1TxBuffer, pos, remaining);
-            ei();
-            remaining -= bytesWritten;
+        di();
+        uint8_t bytesWritten = circularBufferWrite(serial1TxBuffer, pos, remaining);
+        ei();
 
-            if (bytesWritten > 0)
-                PIE1bits.TXIE = 1;
-        }
+        remaining -= bytesWritten;
+
+        if (bytesWritten > 0)
+            PIE1bits.TXIE = 1;
     }
 }
 
@@ -93,53 +98,27 @@ int16_t serial1ReadByte(void)
     return byte;
 }
 
-uint8_t serial1Read(void* buffer, uint8_t maxSize)
+uint8_t serial1Read(void __ram* buffer, uint8_t maxSize)
 {
+    if (*(uint8_t*)0x20 == 0x61U)
+        __debug_break();
+    if (buffer == (void*)0x017e)
+        __debug_break();
+    if (buffer == (void*)0x2000)
+        __debug_break();
+
     di();
+    if (*(uint8_t*)0x20 == 0x61U)
+        __debug_break();
+    if (buffer == (void*)0x017e)
+        __debug_break();
+    if (buffer == (void*)0x2000)
+        __debug_break();
     uint8_t readLength = circularBufferRead(serial1RxBuffer, buffer, maxSize);
+    if (*(uint8_t*)0x20 == 0x61U)
+        __debug_break();
     ei();
 
     return readLength;
 }
 
-int16_t serial1ReadLineBlocking(void* buffer, uint8_t maxSize)
-{
-    char tmp[16];
-    uint8_t lineLength = 0;
-
-    for(;;)
-    {
-        uint8_t readLength = serial1Read(tmp, sizeof(tmp));
-        if (readLength == 0)
-        {
-            __delay_ms(10);
-            continue;
-        }
-
-        for (uint8_t i = 0; i < readLength; ++i)
-        {
-            uint8_t ch = tmp[i];
-
-            switch (ch)
-            {
-                case '\n':
-                    // Ignore
-                    break;
-
-                case '\r':
-                    goto end;
-
-                default:
-                    if (lineLength >= maxSize)
-                        return UART_OVERFLOW;
-
-                    *((uint8_t*)buffer + lineLength) = ch;
-                    ++lineLength;
-                    break;
-            }
-        }
-    }
-
-end:
-    return (int16_t)lineLength;
-}
