@@ -20,22 +20,22 @@ typedef enum
 MAKE_CIRCULAR_BUFFER(serial1TxBuffer, 40);
 MAKE_CIRCULAR_BUFFER(serial1RxBuffer, 40);
 
-inline void serial1DisableTxInt(void)
+extern inline void serial1DisableTxInt(void)
 {
     IEC0bits.U1TXIE = 0;
 }
 
-inline void serial1EnableTxInt(void)
+extern inline void serial1EnableTxInt(void)
 {
     IEC0bits.U1TXIE = 1;
 }
 
-inline void serial1DisableRxInt(void)
+extern inline void serial1DisableRxInt(void)
 {
     IEC0bits.U1RXIE = 0;
 }
 
-inline void serial1EnableRxInt(void)
+extern inline void serial1EnableRxInt(void)
 {
     IEC0bits.U1RXIE = 1;
 }
@@ -47,7 +47,7 @@ void serial1SetTXInterruptMode(TransmitInterruptMode mode)
     U1STA = tmp;
 }
 
-inline void serial1StartTransmit(void)
+extern inline void serial1StartTransmit(void)
 {
     if (U1STAbits.TRMT == 1)
         IFS0bits.U1TXIF = 1;

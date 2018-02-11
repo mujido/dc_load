@@ -9,6 +9,7 @@
 #include "mcu.h"
 #include "circular_buffer.h"
 #include "serial.h"
+#include "lineedit.h"
 #include <string.h>
 #include <libpic30.h>
 
@@ -31,37 +32,18 @@ int main(void)
 
     __delay_ms(10);     // Allow time for system to startup
 
-    uint8_t buf[80];
-    uint16_t bufLength = 0;
-
     serial1SendLineBlocking("Starting...");
+    serial1SendStringBlocking("\0337\033[r\033[999;999H\033[6n\0338");
 
     for (;;)
     {
-        bufLength += serial1Read(buf + bufLength, sizeof(buf) - bufLength);
-        if (bufLength == sizeof(buf))
-        {
-            serial1SendLineBlocking("Buffer overflow!");
-            bufLength = 0;
-        }
-
-
-        uint8_t* eol = memchr((char*)buf, '\r', bufLength);
-        if (eol != NULL)
+        LineEditStatus leStatus = lineEditReadSerial();
+        if (leStatus == LINE_EDIT_EOL)
         {
             serial1SendStringBlocking("echo: ");
-            serial1SendBlocking(buf, eol - buf);
+            serial1SendBlocking(lineContext.lineBuf_, lineContext.length_);
             serial1SendBlocking(crlf, sizeof(crlf));
-
-            bufLength -= eol - buf + 1;
-            if (bufLength && buf[bufLength - 1] == '\n')
-            {
-                --bufLength;
-                ++eol;
-            }
-
-            if (bufLength > 0)
-                memmove(buf, eol + 1, bufLength);
+            lineEditClear();
         }
     }
     return 0;
