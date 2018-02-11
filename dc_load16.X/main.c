@@ -33,7 +33,6 @@ int main(void)
     __delay_ms(10);     // Allow time for system to startup
 
     serial1SendLineBlocking("Starting...");
-    serial1SendStringBlocking("\0337\033[r\033[999;999H\033[6n\0338");
 
     for (;;)
     {
