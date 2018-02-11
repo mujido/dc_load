@@ -1,5 +1,7 @@
 *.bak
 *-bak
-build
-dist
-debug
+*.X/build
+*.X/dist
+*.X/debug
+*.X/disassembly
+*.X/nbproject/private
