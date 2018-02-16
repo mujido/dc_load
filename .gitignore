@@ -5,3 +5,5 @@
 *.X/debug
 *.X/disassembly
 *.X/nbproject/private
+*.X/nbproject/Makefile-*
+*.X/nbproject/*.bash
