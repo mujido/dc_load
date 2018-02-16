@@ -3,7 +3,7 @@
 
 #define MICROSECS_PER_HZ (uint32_t)(1000000ULL / HZ)
 
-static uint64_t systemTimerTicks = 0;
+static Tick systemTimerTicks = 0;
 
 void systemTimerInit(void)
 {
@@ -21,10 +21,10 @@ void systemTimerInit(void)
     T1CONbits.TON = 1;          // Start timer
 }
 
-uint64_t systemTimerGetCurrent(void)
+Tick systemTimerGetCurrent(void)
 {
     IEC0bits.T1IE = 0;
-    uint64_t tmp = systemTimerTicks;
+    Tick tmp = systemTimerTicks;
     IEC0bits.T1IE = 1;
     return tmp;
 }

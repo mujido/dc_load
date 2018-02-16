@@ -36,15 +36,15 @@ int main(void)
 
     serial1SendLineBlocking("Starting...");
 
-    static const uint32_t blinkInterval = systemTimerMillisecondsToTicks(500);
-    uint64_t nextBlink = systemTimerGetCurrent() + blinkInterval;
+    static const Tick blinkInterval = systemTimerMillisecondsToTicks(500);
+    Tick nextBlink = systemTimerGetCurrent() + blinkInterval;
 
     for (;;)
     {
-        uint64_t currentTime = systemTimerGetCurrent();
+        Tick currentTime = systemTimerGetCurrent();
         if (currentTime >= nextBlink)
         {
-            LATAbits.LATA0 ^= 1;
+            LATA ^= 1;
             nextBlink += blinkInterval;
         }
 
