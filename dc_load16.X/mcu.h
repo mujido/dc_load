@@ -5,7 +5,7 @@
 #define FCY (7370000ULL / 2)
 
 // Define number of system clock ticks per second
-#define HZ 100
+#define HZ 200
 
 #include <xc.h>
 

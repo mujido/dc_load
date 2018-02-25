@@ -15,6 +15,8 @@
 #include <libpic30.h>
 #include <stdio.h>
 
+#define ADC_AVERAGE_SAMPLES 4
+
 void initIO(void)
 {
     // Set all PORTA pins to output LOW
@@ -79,7 +81,9 @@ int main(void)
     Tick blinkInterval = systemTimerMillisecondsToTicks(500);
     Tick nextBlink = systemTimerGetCurrent() + blinkInterval;
 
-    Tick adcSampleInterval = systemTimerMillisecondsToTicks(1000);
+    uint16_t adcSum = 0;
+    uint8_t adcSamples = 0;
+    Tick adcSampleInterval = systemTimerMillisecondsToTicks((2500 / ADC_AVERAGE_SAMPLES + 5) / 10);
     Tick adcSampleTicks = 1;    // sample and conversion time are short
     Tick adcConvertTicks = 1;   // compared to tick period
     Tick nextAdcEvent = systemTimerGetCurrent() + adcSampleInterval;
@@ -90,7 +94,6 @@ int main(void)
     for (;;)
     {
         char text[80];
-        uint16_t adcValue;
 
         Tick currentTime = systemTimerGetCurrent();
 
@@ -102,6 +105,8 @@ int main(void)
 
         if (currentTime >= nextAdcEvent)
         {
+            uint16_t adcValue;
+
             switch (adcState)
             {
             case ADC_INACTIVE:
@@ -127,9 +132,16 @@ int main(void)
                 }
 
                 adcValue = ADC1BUF0;
+                adcSum += adcValue;
+                ++adcSamples;
 
-                sprintf(text, "%-8lu: %u\r\n", currentTime, adcValue);
-                serial1SendStringBlocking(text);
+                if (adcSamples >= ADC_AVERAGE_SAMPLES)
+                {
+                    sprintf(text, "%-8lu: %u\r\n", currentTime, (uint16_t)(adcSum / ADC_AVERAGE_SAMPLES));
+                    serial1SendStringBlocking(text);
+                    adcSamples = 0;
+                    adcSum = 0;
+                }
                 break;
             }
         }
@@ -142,6 +154,8 @@ int main(void)
             serial1SendBlocking(crlf, sizeof(crlf));
             lineEditClear();
         }
+
+        Idle();
     }
     return 0;
 }
