@@ -74,7 +74,7 @@ void serial1SendByteBlocking(uint8_t byte)
     } while (!sent);
 }
 
-void serial1SendBlocking(const void* buffer, uint16_t size)
+void _serial1SendBlocking(const void* buffer, uint16_t size)
 {
     const uint8_t* pos = buffer;
     uint16_t remaining = size;
@@ -98,6 +98,31 @@ void serial1SendBlocking(const void* buffer, uint16_t size)
         if (remaining > 0)
             __delay_us(20);
     }
+}
+
+void serial1SendBlocking(const void* buffer, uint16_t size)
+{
+    const uint8_t* eol = memchr(buffer, '\n', size);
+    if (eol == NULL)
+    {
+        _serial1SendBlocking(buffer, size);
+        return;
+    }
+
+    const uint8_t* pos = buffer;
+    const uint8_t* end = pos + size;
+
+    while (pos != end && eol != NULL)
+    {
+        uint16_t blockSize = eol - pos;
+        _serial1SendBlocking(pos, blockSize);
+        _serial1SendBlocking("\r\n", 2);
+        pos += blockSize + 1;
+        eol = memchr(pos, '\n', end - pos);
+    }
+
+    if (pos != end)
+        _serial1SendBlocking(pos, end - pos);
 }
 
 void serial1SendStringBlocking(const void* str)

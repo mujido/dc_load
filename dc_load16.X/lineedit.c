@@ -74,7 +74,7 @@ LineEditStatus lineEditReadSerial(void)
             break;
 
         case '\r':
-            serial1SendBlocking(crLf, sizeof(crLf));
+            serial1SendBlocking("\n", 1);
             state = LINE_EDIT_EOL;
             goto end;
 
@@ -87,6 +87,7 @@ LineEditStatus lineEditReadSerial(void)
     }
 
 end:
+    lineContext.lineBuf_[lineContext.length_] = '\0';
     return state;
 }
 

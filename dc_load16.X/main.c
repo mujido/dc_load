@@ -65,6 +65,8 @@ enum ADCState
 extern const char crlf[];
 const char crlf[2] = { '\r', '\n' };
 
+static char stdoutBuf[80];
+
 int main(void)
 {
     RCONbits.SWDTEN = 0;        // Disable watchdog timer
@@ -75,8 +77,9 @@ int main(void)
     initADC();
 
     __delay_ms(10);     // Allow time for system to startup
+    setvbuf(stdout, stdoutBuf, _IOLBF, sizeof(stdoutBuf));
 
-    serial1SendLineBlocking("Starting...");
+    puts("Starting...");
 
     Tick blinkInterval = systemTimerMillisecondsToTicks(500);
     Tick nextBlink = systemTimerGetCurrent() + blinkInterval;
@@ -93,8 +96,6 @@ int main(void)
 
     for (;;)
     {
-        char text[80];
-
         Tick currentTime = systemTimerGetCurrent();
 
         if (currentTime >= nextBlink)
@@ -127,7 +128,7 @@ int main(void)
 
                 if (!AD1CON1bits.DONE)
                 {
-                    serial1SendStringBlocking("ADC not done\r\n");
+                    puts("ADC not done");
                     break;
                 }
 
@@ -137,8 +138,7 @@ int main(void)
 
                 if (adcSamples >= ADC_AVERAGE_SAMPLES)
                 {
-                    sprintf(text, "%-8lu: %u\r\n", currentTime, (uint16_t)(adcSum / ADC_AVERAGE_SAMPLES));
-                    serial1SendStringBlocking(text);
+                    printf("%-8lu: %u\n", currentTime, (uint16_t)(adcSum / ADC_AVERAGE_SAMPLES));
                     adcSamples = 0;
                     adcSum = 0;
                 }
@@ -149,9 +149,27 @@ int main(void)
         LineEditStatus leStatus = lineEditReadSerial();
         if (leStatus == LINE_EDIT_EOL)
         {
-            serial1SendStringBlocking("echo: ");
-            serial1SendBlocking(lineContext.lineBuf_, lineContext.length_);
-            serial1SendBlocking(crlf, sizeof(crlf));
+            if (lineContext.lineBuf_[0] == '\0')
+            {
+                // Ignore
+            }
+            else if (strcmp(lineContext.lineBuf_, "adc pause") == 0)
+            {
+                adcState = ADC_INACTIVE;
+                nextAdcEvent = UINT32_MAX;
+                puts("ADC paused");
+            }
+            else if (strcmp(lineContext.lineBuf_, "adc run") == 0)
+            {
+                adcState = ADC_INACTIVE;
+                nextAdcEvent = 0;
+                puts("ADC restarting");
+            }
+            else
+            {
+                printf("Unknown command: %s\n", lineContext.lineBuf_);
+            }
+
             lineEditClear();
         }
 

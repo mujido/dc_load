@@ -7,7 +7,7 @@
 
 typedef struct LineEdit_
 {
-    uint8_t lineBuf_[LINE_EDIT_CAPACITY];
+    char lineBuf_[LINE_EDIT_CAPACITY + 1];
     uint8_t length_;
 } LineEdit;
 
