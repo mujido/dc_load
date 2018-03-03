@@ -168,6 +168,16 @@ int main(void)
                 nextAdcEvent = 0;
                 puts("ADC restarting");
             }
+            else if (strcmp(lineContext.lineBuf_, "blink off") == 0)
+            {
+                LATA &= ~1;
+                nextBlink = UINT32_MAX;
+            }
+            else if (strcmp(lineContext.lineBuf_, "blink on") == 0)
+            {
+                LATAbits.LATA0 = 1;
+                nextBlink = currentTime + blinkInterval;
+            }
             else
             {
                 printf("Unknown command: %s\n", lineContext.lineBuf_);
