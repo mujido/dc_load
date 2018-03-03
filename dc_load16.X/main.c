@@ -27,8 +27,10 @@ void initIO(void)
     TRISB = 1 << 3;
     LATB = 0;
 
-    AD1PCFGL = 0xFFFF;      // make all IO ports digital except RB5/AN3
-    AD1PCFGLbits.PCFG5 = 0;
+    // make all IO ports digital except RB3/AN5
+    ANSA = 0;
+    ANSB = 0;
+    ANSBbits.ANSB3 = 1;
 }
 
 void initADC(void)
@@ -38,7 +40,7 @@ void initADC(void)
     AD1CON1bits.ASAM = 0;       // Manual sample start mode
     AD1CON1bits.SSRC = 0;       // Manual transition between sample and convert
     AD1CON1bits.FORM = 0b00;    // Integer conversion mode
-    AD1CON1bits.AD12B = 1;      // 12-bit mode
+    AD1CON1bits.MODE12 = 1;     // 12-bit mode
     AD1CON1bits.ADSIDL = 0;     // Module runs in IDLE mode
 
     // Sample A only, CH0 only, AVdd/AVss for volt references
