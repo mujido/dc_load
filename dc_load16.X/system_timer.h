@@ -9,4 +9,8 @@ void systemTimerInit(void);
 
 Tick systemTimerGetCurrent(void);
 
+void systemTimerSleepTicks(uint32_t ticks);
+
 #define systemTimerMillisecondsToTicks(ms) ((Tick)(ms) * HZ / 1000)
+
+#define systemTimerSleepMilliseconds(ms) systemTimerSleepTicks(systemTimerMillisecondsToTicks(ms))

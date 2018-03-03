@@ -29,6 +29,13 @@ Tick systemTimerGetCurrent(void)
     return tmp;
 }
 
+void systemTimerSleepTicks(uint32_t ticks)
+{
+    Tick end = systemTimerGetCurrent() + ticks;
+    while (systemTimerGetCurrent() < end)
+        Idle();
+}
+
 void __attribute__((__interrupt__, no_auto_psv)) _T1Interrupt(void)
 {
     IFS0bits.T1IF = 0;

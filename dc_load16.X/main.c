@@ -76,8 +76,9 @@ int main(void)
     initSerial1();
     initADC();
 
-    __delay_ms(10);     // Allow time for system to startup
     setvbuf(stdout, stdoutBuf, _IOLBF, sizeof(stdoutBuf));
+
+    systemTimerSleepMilliseconds(100);     // Allow time for system to startup
 
     puts("Starting...");
 
